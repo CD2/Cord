@@ -1,4 +1,8 @@
-class Cord::ApiBaseController < ActionController::API
+class Cord::ApiBaseController < ::ApplicationController
+
+  before_action do
+    api.run_before_callbacks
+  end
 
   def schema
     render json: {
@@ -33,7 +37,10 @@ class Cord::ApiBaseController < ActionController::API
   private
 
   def api
-    @api ||= "#{params[:api].camelize}Api".constantize.new params
+    api_class_name = "#{params[:api].camelize}Api"
+    api_class = api_class_name.constantize
+    raise NotImplementedError.new("#{api_class_name} is an abstract class and cannot be instantiated") if api_class.abstract?
+    @api ||= api_class.new self, params
   end
 
 end

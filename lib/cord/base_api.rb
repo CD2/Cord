@@ -2,9 +2,48 @@ require_relative 'dsl'
 module Cord
   class BaseApi
     include DSL
+    include ActiveSupport::Callbacks
 
-    def initialize params
+    define_callbacks :before_action
+
+    def self.before_action &block
+      set_callback :before_action, :before, &block
+    end
+
+    def run_before_callbacks
+      run_callbacks :before_action
+    end
+
+
+    # class Record
+    #
+    #   def save
+    #     run_callbacks :save do
+    #       puts "- save"
+    #     end
+    #   end
+    # end
+    #
+    # class PersonRecord < Record
+    #   set_callback :save, :before, :saving_message
+    #   def saving_message
+    #     puts "saving..."
+    #   end
+    #
+    #   set_callback :save, :after do |object|
+    #     puts "saved"
+    #   end
+    # end
+
+
+
+    def initialize controller, params
+      @controller = controller
       @params = params
+    end
+
+    def controller
+      @controller
     end
 
     def ids

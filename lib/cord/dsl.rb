@@ -1,5 +1,6 @@
 module Cord
   module DSL
+
     def self.included(base)
       base.extend ClassMethods
     end
@@ -14,6 +15,18 @@ module Cord
     def model
       return driver if driver <= ActiveRecord::Base
       driver.model
+    end
+
+    def before_actions
+      self.class.before_actions
+    end
+
+    def around_actions
+      self.class.around_actions
+    end
+
+    def after_actions
+      self.class.after_actions
     end
 
     def columns
@@ -45,6 +58,15 @@ module Cord
     end
 
     module ClassMethods
+
+
+      def abstract?
+        @abstract || false
+      end
+
+      def abstract!
+        @abstract = true
+      end
 
       def driver driver=nil, &block
         block = -> { driver } unless block.present?
