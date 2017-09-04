@@ -8,7 +8,7 @@ module Cord
     end
 
     def ids
-      ids = {all_ids: driver.ids}
+      ids = {all: driver.ids}
       scopes.each do |name, block|
         ids[name] = model.instance_exec(&block).ids
       end
