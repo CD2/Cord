@@ -8,9 +8,9 @@ module Cord
     end
 
     def ids
-      ids = {all: driver.select(:id).map(&:ids)}
+      ids = {all: driver.select(:id).map(&:id)}
       scopes.each do |name, block|
-        ids[name] = model.instance_exec(&block).select(:id).map(&:ids)
+        ids[name] = model.instance_exec(&block).select(:id).map(&:id)
       end
       render ids: ids
       @response
