@@ -10,7 +10,7 @@ module Cord
     def ids
       ids = {all_ids: driver.ids}
       scopes.each do |name, block|
-        ids["#{name}_ids"] = model.instance_exec(&block).ids
+        ids[name] = model.instance_exec(&block).ids
       end
       render ids: ids
       @response
