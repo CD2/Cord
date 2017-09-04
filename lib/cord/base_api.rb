@@ -89,7 +89,7 @@ module Cord
     private
 
     def white_list_attributes(attrs)
-      blacklist = attrs - attribute_names
+      blacklist = attrs - attribute_names - model.column_names
       error("Unknown attributes: #{blacklist.join(', ')}") if blacklist.any?
       attrs & attribute_names
     end
