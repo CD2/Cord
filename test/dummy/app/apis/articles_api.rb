@@ -39,6 +39,11 @@ class ArticlesApi < ApplicationApi
   #
   # ########## ACTIONS
   #
+
+  sort :name
+  sort :updated_at
+
+
   action :vote_up do # collection method
     byebug
     driver.vote_up!

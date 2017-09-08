@@ -47,9 +47,10 @@ module Cord
     end
 
     def ids
-      ids = {all: driver.all.map(&:id)}
+      dri = params[:sort].present? ? sorted_driver : driver
+      ids = {all: dri.all.map(&:id)}
       scopes.each do |name, block|
-        ids[name] = model.instance_exec(&block).all.map(&:id)
+        ids[name] = dri.instance_exec(&block).all.map(&:id)
       end
       render ids: ids
       @response
@@ -83,6 +84,20 @@ module Cord
 
       render records: records_json
       @response
+    end
+
+    def sorted_driver
+      col, dir = params[:sort].split(' ')
+      unless dir.in?(%w[ASC DESC])
+        error "sort direction must be either DESC or ASC, instead got #{dir}"
+        return driver
+      end
+      if sort_block = self.sorts[col]
+        instance_exec(driver, dir, &sort_block)
+      else
+        error "unknown sort #{col}"
+        driver
+      end
     end
 
     def perform action_name

@@ -17,6 +17,10 @@ module Cord
       driver.model
     end
 
+    def sorts
+      self.class.sorts
+    end
+
     def before_actions
       self.class.before_actions
     end
@@ -90,6 +94,15 @@ module Cord
       def scope name, &block
         block ||= ->{ send(name) }
         scopes[name] = block
+      end
+
+      def sorts
+        @sorts ||= {}
+      end
+
+      def sort name, &block
+        block ||= ->(driver, dir){ driver.order(name => dir) }
+        sorts[name.to_s] = block
       end
 
       # has_many :books

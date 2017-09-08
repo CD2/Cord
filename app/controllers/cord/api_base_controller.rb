@@ -11,6 +11,7 @@ class Cord::ApiBaseController < ::ApplicationController
       columns: api.model.column_names,
       attributes: api.attribute_names,
       scopes: api.scopes.keys,
+      sorts: api.sorts.keys,
       actions: {
         member: api.member_actions.keys,
         collection: api.collection_actions.keys,
