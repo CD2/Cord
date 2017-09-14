@@ -52,7 +52,7 @@ module Cord
       scopes.each do |name, block|
         ids[name] = dri.instance_exec(&block).all.map(&:id)
       end
-      render ids: ids
+      render model.table_name: {ids: ids}
       @response
     end
 
