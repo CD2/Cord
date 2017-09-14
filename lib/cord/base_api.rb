@@ -82,7 +82,7 @@ module Cord
         end
       end
 
-      render records: records_json
+      render model.table_name => {records: records_json}
       @response
     end
 
