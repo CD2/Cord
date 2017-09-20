@@ -135,11 +135,11 @@ module Cord
         reflection = @driver.call.reflect_on_association association_name
         case reflection&.macro
         when :belongs_to
-          self.belongs_to name
+          self.belongs_to association_name
         when :has_one
-          self.has_one name
+          self.has_one association_name
         when :has_many
-          self.has_many name
+          self.has_many association_name
         else
           raise "Driver has no assocation named: #{association_name}"
         end
