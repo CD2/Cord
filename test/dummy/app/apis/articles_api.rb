@@ -18,7 +18,7 @@ class ArticlesApi < ApplicationApi
 	# scope :ordered   #Use a scope defined on the model
 	# scope :published { where(published: false) } # custom scope which isnt on the model, required as cant chain scopes
   #
-	has_many :comments
+	association :comments
 	# belongs_to :author  # adds methods: author
 	# # has_one :forum # adds methods: forum, forum_id
   #

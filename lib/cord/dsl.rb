@@ -132,7 +132,7 @@ module Cord
       end
 
       def association association_name
-        reflection = @driver.reflect_on_association association_name
+        reflection = @driver.call.reflect_on_association association_name
         case reflection&.macro
         when :belongs_to
           self.belongs_to name
