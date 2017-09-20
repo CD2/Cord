@@ -4,6 +4,11 @@ class ArticlesApi < ApplicationApi
 	# # api_for Article
   #
   driver Article # limit all results to a subset of the model
+
+  scope :thing do |x|
+    x.where(id: 1)
+  end
+
 	# driver do
   #   if params[:tag]
   #     Article.published.where('body LIKE ?', "%#{params[:tag]}%")
@@ -18,7 +23,7 @@ class ArticlesApi < ApplicationApi
 	# scope :ordered   #Use a scope defined on the model
 	# scope :published { where(published: false) } # custom scope which isnt on the model, required as cant chain scopes
   #
-	association :comments
+	has_many :comments
 	# belongs_to :author  # adds methods: author
 	# # has_one :forum # adds methods: forum, forum_id
   #

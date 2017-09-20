@@ -50,7 +50,7 @@ module Cord
       dri = params[:sort].present? ? sorted_driver : driver
       ids = {all: dri.all.map(&:id)}
       scopes.each do |name, block|
-        ids[name] = dri.instance_exec(&block).all.map(&:id)
+        ids[name] = controller.instance_exec(dri, &block).all.map(&:id)
       end
       render model.table_name => {ids: ids}
       @response

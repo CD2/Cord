@@ -8,7 +8,7 @@ module Cord
     def driver
       @driver ||= begin
         block = self.class.instance_variable_get(:@driver) || raise('No api driver set')
-        instance_exec &block
+        controller.instance_exec &block
       end
     end
 
@@ -92,7 +92,7 @@ module Cord
       end
 
       def scope name, &block
-        block ||= ->{ send(name) }
+        block ||= ->(x){ x.send(name) }
         scopes[name] = block
       end
 
