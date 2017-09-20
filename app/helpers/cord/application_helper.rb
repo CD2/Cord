@@ -1,5 +1,5 @@
 module Cord
-  class ApplicationHelper
+  module ApplicationHelper
     def cord_controller?
       Cord.in? parents
     end
