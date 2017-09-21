@@ -6,10 +6,9 @@ module Cord
     end
 
     def driver
-      @driver ||= begin
-        block = self.class.instance_variable_get(:@driver) || raise('No api driver set')
-        controller.instance_exec &block
-      end
+      return @driver if @driver
+      block = self.class.instance_variable_get(:@driver) || raise('No api driver set')
+      @driver = controller.instance_exec &block
     end
 
     def model
@@ -129,20 +128,6 @@ module Cord
 
       def belongs_to association_name
         self.attribute association_name
-      end
-
-      def association association_name
-        reflection = @driver.call.reflect_on_association association_name
-        case reflection&.macro
-        when :belongs_to
-          self.belongs_to association_name
-        when :has_one
-          self.has_one association_name
-        when :has_many
-          self.has_many association_name
-        else
-          raise "Driver has no assocation named: #{association_name}"
-        end
       end
 
       def attributes

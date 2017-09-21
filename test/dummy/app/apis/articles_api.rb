@@ -3,7 +3,11 @@ class ArticlesApi < ApplicationApi
   # # optional | autoloads all assocations and scopes (maybe methods?)
 	# # api_for Article
   #
-  driver Article # limit all results to a subset of the model
+  driver {
+    byebug
+    params
+    Article
+  } # limit all results to a subset of the model
 
   scope :thing do |x|
     x.where(id: 1)
@@ -31,6 +35,11 @@ class ArticlesApi < ApplicationApi
 	attribute :score do |article| # attribute with block, block is passed the current record
 		article.id * 10
 	end
+
+  attribute :zzz do |article|
+    byebug
+    nil
+  end
   #
   # ########## MUTATIONS
   #

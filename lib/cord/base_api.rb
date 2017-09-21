@@ -70,7 +70,7 @@ module Cord
             record_json = record.as_json({except: ignore_columns})
           end
           allowed_attributes.each do |attr_name|
-            record_json[attr_name] = instance_exec(record, &attributes[attr_name])
+            record_json[attr_name] = controller.instance_exec(record, &attributes[attr_name])
           end
           records_json.append(record_json)
         end
