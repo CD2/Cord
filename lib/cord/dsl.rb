@@ -122,7 +122,7 @@ module Cord
       def has_one association_name
         self.attribute association_name
         self.attribute "#{association_name}_id" do |record|
-          record.send(association_name).id
+          record.send(association_name)&.id
         end
       end
 
