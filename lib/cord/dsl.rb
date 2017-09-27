@@ -8,7 +8,7 @@ module Cord
     def driver
       return @driver if @driver
       block = self.class.instance_variable_get(:@driver) || raise('No api driver set')
-      @driver = controller.instance_exec &block
+      @driver = instance_exec &block
     end
 
     def model

@@ -50,7 +50,7 @@ module Cord
       dri = params[:sort].present? ? sorted_driver : driver
       ids = {all: dri.all.map(&:id)}
       scopes.each do |name, block|
-        ids[name] = controller.instance_exec(dri, &block).all.map(&:id)
+        ids[name] = instance_exec(dri, &block).all.map(&:id)
       end
       render model.table_name => {ids: ids}
       @response
@@ -70,7 +70,7 @@ module Cord
             record_json = record.as_json({except: ignore_columns})
           end
           allowed_attributes.each do |attr_name|
-            record_json[attr_name] = controller.instance_exec(record, &attributes[attr_name])
+            record_json[attr_name] = instance_exec(record, &attributes[attr_name])
           end
           records_json.append(record_json)
         end
@@ -105,7 +105,7 @@ module Cord
         action = member_actions[action_name]
         if (action)
           driver.where(id: ids).find_each do |record|
-            controller.instance_exec(record, &action)
+            instance_exec(record, &action)
           end
         else
           error('no action found')
@@ -113,12 +113,16 @@ module Cord
       else
         action = collection_actions[action_name]
         if (action)
-          controller.instance_exec &action
+          instance_exec &action
         else
           error('no action found')
         end
       end
       @response
+    end
+
+    def method_missing *args, &block
+      controller.send(*args, &block)
     end
 
     protected
