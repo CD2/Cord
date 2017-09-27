@@ -103,13 +103,17 @@ module Cord
     def perform action_name
       if ids = params[:ids]
         action = member_actions[action_name]
-        driver.where(id: ids).find_each do |record|
-          instance_exec(record, &action)
+        if (action)
+          driver.where(id: ids).find_each do |record|
+            controller.instance_exec(record, &action)
+          end
+        else
+          error('no action found')
         end
       else
         action = collection_actions[action_name]
         if (action)
-          instance_exec &action
+          controller.instance_exec &action
         else
           error('no action found')
         end
