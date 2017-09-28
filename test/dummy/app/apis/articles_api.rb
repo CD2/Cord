@@ -4,14 +4,14 @@ class ArticlesApi < ApplicationApi
 	# # api_for Article
   #
   driver {
-    byebug
-    params
-    Article
+    Article.includes(:comments)
   } # limit all results to a subset of the model
 
   scope :thing do |x|
     x.where(id: 1)
   end
+
+  unique_key :name
 
 	# driver do
   #   if params[:tag]

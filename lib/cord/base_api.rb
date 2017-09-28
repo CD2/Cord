@@ -58,31 +58,54 @@ module Cord
 
     def get(options={})
       records = driver.all
-      records = records.where(id: options[:ids]) if (options[:ids].present?)
-
-      if (options[:attributes].present?)
-        allowed_attributes = white_list_attributes(options[:attributes])
-        records_json = []
-        records.each do |record|
-          if columns.any?
-            record_json = record.as_json({only: columns, except: ignore_columns})
-          else
-            record_json = record.as_json({except: ignore_columns})
+      if (options[:ids].present?)
+        main_table = records.table_name
+        query = unique_keys.map do |key|
+          subquery = records.model.where(key => options[:ids])
+          unless subquery.select_values.any?
+            subquery = subquery.select("\"#{main_table}\".*")
           end
-          allowed_attributes.each do |attr_name|
-            record_json[attr_name] = instance_exec(record, &attributes[attr_name])
-          end
-          records_json.append(record_json)
+          subquery = subquery.select("\"#{main_table}\".\"#{key}\" AS cord_key")
+          subquery.to_sql
         end
-      else
-        if (columns.any?)
-          records_json = records.as_json({only: columns, except: ignore_columns})
-        else
-          records_json = records.as_json({except: ignore_columns})
+        query = query.join(' UNION ')
+        records = records.from("(#{query}) AS #{main_table}")
+        if (records.references_values + records.eager_load_values).any?
+          raise 'references() and eager_load() are unsupported'
         end
+        unless records.select_values.any?
+          records = records.select("\"#{main_table}\".*")
+        end
+        records = records.select(:cord_key)
       end
 
-      render model.table_name => {records: records_json}
+      @aliases = {}
+      allowed_attributes = if (options[:attributes].present?)
+        white_list_attributes(options[:attributes])
+      else
+        []
+      end
+      records_json = []
+      records.each do |record|
+        if columns.any?
+          record_json = record.as_json(
+            only: columns, except: ignore_columns + [:cord_key]
+          )
+        else
+          record_json = record.as_json(
+            except: ignore_columns + [:cord_key]
+          )
+        end
+        allowed_attributes.each do |attr_name|
+          record_json[attr_name] = instance_exec(record, &attributes[attr_name])
+        end
+        if record.has_attribute?(:cord_key) && record.cord_key != record.id
+          @aliases[record.cord_key] = record.id
+        end
+        records_json.append(record_json)
+      end
+
+      render model.table_name => { records: records_json, aliases: @aliases }
       @response
     end
 

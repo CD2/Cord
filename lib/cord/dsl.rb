@@ -60,6 +60,10 @@ module Cord
       attributes.keys
     end
 
+    def unique_keys
+      self.class.unique_keys
+    end
+
     module ClassMethods
 
 
@@ -93,6 +97,14 @@ module Cord
       def scope name, &block
         block ||= ->(x){ x.send(name) }
         scopes[name] = block
+      end
+
+      def unique_keys
+        @unique_keys ||= [:id]
+      end
+
+      def unique_key name
+        @unique_keys = unique_keys + [name]
       end
 
       def sorts
