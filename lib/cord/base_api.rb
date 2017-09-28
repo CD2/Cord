@@ -65,10 +65,12 @@ module Cord
           unless subquery.select_values.any?
             subquery = subquery.select("\"#{main_table}\".*")
           end
-          subquery = subquery.select("\"#{main_table}\".\"#{key}\" AS cord_key")
+          subquery = subquery.select(
+            "CAST(\"#{main_table}\".\"#{key}\" AS TEXT) AS cord_key"
+          )
           subquery.to_sql
         end
-        query = query.join(' UNION ')
+        query = query.join(' UNION ALL ')
         records = records.from("(#{query}) AS #{main_table}")
         if (records.references_values + records.eager_load_values).any?
           raise 'references() and eager_load() are unsupported'
@@ -99,7 +101,7 @@ module Cord
         allowed_attributes.each do |attr_name|
           record_json[attr_name] = instance_exec(record, &attributes[attr_name])
         end
-        if record.has_attribute?(:cord_key) && record.cord_key != record.id
+        if record.has_attribute?(:cord_key) && record.cord_key != record.id.to_s
           @aliases[record.cord_key] = record.id
         end
         records_json.append(record_json)
