@@ -60,8 +60,8 @@ module Cord
       attributes.keys
     end
 
-    def unique_keys
-      self.class.unique_keys
+    def secondary_keys
+      self.class.secondary_keys
     end
 
     module ClassMethods
@@ -99,12 +99,12 @@ module Cord
         scopes[name] = block
       end
 
-      def unique_keys
-        @unique_keys ||= [:id]
+      def secondary_keys
+        @secondary_keys ||= []
       end
 
-      def unique_key name
-        @unique_keys = unique_keys + [name]
+      def secondary_key name
+        @secondary_keys = secondary_keys + [name]
       end
 
       def sorts

@@ -11,7 +11,7 @@ class ArticlesApi < ApplicationApi
     x.where(id: 1)
   end
 
-  unique_key :name
+  secondary_key :name
 
 	# driver do
   #   if params[:tag]

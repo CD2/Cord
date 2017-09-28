@@ -60,7 +60,7 @@ module Cord
       records = driver.all
       if (options[:ids].present?)
         main_table = records.table_name
-        query = unique_keys.map do |key|
+        query = ([:id] + secondary_keys).map do |key|
           subquery = records.model.where(key => options[:ids])
           unless subquery.select_values.any?
             subquery = subquery.select("\"#{main_table}\".*")
@@ -106,6 +106,8 @@ module Cord
         end
         records_json.append(record_json)
       end
+
+      records_json.uniq! { |x| x['id'] }
 
       render model.table_name => { records: records_json, aliases: @aliases }
       @response
