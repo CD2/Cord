@@ -59,26 +59,30 @@ module Cord
     def get(options={})
       records = driver.all
       if (options[:ids].present?)
-        main_table = records.table_name
-        query = ([:id] + secondary_keys).map do |key|
-          subquery = records.model.where(key => options[:ids])
-          unless subquery.select_values.any?
-            subquery = subquery.select("\"#{main_table}\".*")
+        if secondary_keys.any?
+          main_table = records.table_name
+          query = ([:id] + secondary_keys).map do |key|
+            subquery = records.model.where(key => options[:ids])
+            unless subquery.select_values.any?
+              subquery = subquery.select("\"#{main_table}\".*")
+            end
+            subquery = subquery.select(
+              "CAST(\"#{main_table}\".\"#{key}\" AS TEXT) AS cord_key"
+            )
+            subquery.to_sql
           end
-          subquery = subquery.select(
-            "CAST(\"#{main_table}\".\"#{key}\" AS TEXT) AS cord_key"
-          )
-          subquery.to_sql
+          query = query.join(' UNION ALL ')
+          records = records.from("(#{query}) AS #{main_table}")
+          if (records.references_values + records.eager_load_values).any?
+            raise 'references() and eager_load() are unsupported when using multiple keys'
+          end
+          unless records.select_values.any?
+            records = records.select("\"#{main_table}\".*")
+          end
+          records = records.select(:cord_key)
+        else
+          records = records.where(id: options[:ids])
         end
-        query = query.join(' UNION ALL ')
-        records = records.from("(#{query}) AS #{main_table}")
-        if (records.references_values + records.eager_load_values).any?
-          raise 'references() and eager_load() are unsupported'
-        end
-        unless records.select_values.any?
-          records = records.select("\"#{main_table}\".*")
-        end
-        records = records.select(:cord_key)
       end
 
       @aliases = {}
@@ -107,9 +111,11 @@ module Cord
         records_json.append(record_json)
       end
 
-      records_json.uniq! { |x| x['id'] }
+      response_data = {}
+      response_data[:records] = records_json.uniq { |x| x['id'] }
+      response_data[:aliases] = @aliases if @aliases.any?
+      render model.table_name => response_data
 
-      render model.table_name => { records: records_json, aliases: @aliases }
       @response
     end
 
