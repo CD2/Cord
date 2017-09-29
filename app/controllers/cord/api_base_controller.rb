@@ -8,7 +8,7 @@ class Cord::ApiBaseController < ::ApplicationController
     render json: {
       table_name: api.model.table_name,
       model_name: api.model.name,
-      columns: api.model.column_names,
+      columns: api.model.column_names - ignore_columns.map(&:to_s),
       attributes: api.attribute_names,
       scopes: api.scopes.keys,
       sorts: api.sorts.keys,
