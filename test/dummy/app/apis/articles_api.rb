@@ -37,9 +37,10 @@ class ArticlesApi < ApplicationApi
 	end
 
   attribute :zzz do |article|
-    byebug
     nil
   end
+
+  join_dependency :zzz, :comments
   #
   # ########## MUTATIONS
   #

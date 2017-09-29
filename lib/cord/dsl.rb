@@ -64,6 +64,10 @@ module Cord
       self.class.secondary_keys
     end
 
+    def join_dependencies
+      self.class.join_dependencies
+    end
+
     module ClassMethods
 
 
@@ -107,6 +111,14 @@ module Cord
         @secondary_keys = secondary_keys + [name]
       end
 
+      def join_dependencies
+        @join_dependencies ||= {}.with_indifferent_access
+      end
+
+      def join_dependency name, association
+        join_dependencies[name] = association
+      end
+
       def sorts
         @sorts ||= {}
       end
@@ -118,28 +130,50 @@ module Cord
 
       # has_many :books
       # book_ids, books, book_count
-      def has_many association_name
+      def has_many association_name, opts = {}
+        options = opts.to_options
+        joins = options.fetch(:joins, true)
+
         self.attribute association_name do |record|
           record.send(association_name)
         end
         single = association_name.to_s.singularize
         self.attribute "#{single}_ids"
         self.attribute "#{single}_count" do |record|
-          record.send(association_name).count
+          record.send(association_name).size
+        end
+
+        if joins
+          self.join_dependency association_name, association_name
+          self.join_dependency "#{single}_ids", association_name
+          self.join_dependency "#{single}_count", association_name
         end
       end
 
       # has_one :token
       # adds token
-      def has_one association_name
+      def has_one association_name, opts = {}
+        options = opts.to_options
+        joins = options.fetch(:joins, true)
+
         self.attribute association_name
         self.attribute "#{association_name}_id" do |record|
           record.send(association_name)&.id
         end
+
+        if joins
+          self.join_dependency association_name, association_name
+          self.join_dependency "#{association_name}_id", association_name
+        end
       end
 
-      def belongs_to association_name
+      def belongs_to association_name, opts = {}
+        options = opts.to_options
+        joins = options.fetch(:joins, true)
+
         self.attribute association_name
+
+        self.join_dependency association_name, association_name if joins
       end
 
       def attributes

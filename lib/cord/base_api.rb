@@ -57,63 +57,37 @@ module Cord
     end
 
     def get(options={})
-      records = driver.all
-      if (options[:ids].present?)
-        if secondary_keys.any?
-          main_table = records.table_name
-          query = ([:id] + secondary_keys).map do |key|
-            subquery = records.model.where(key => options[:ids])
-            unless subquery.select_values.any?
-              subquery = subquery.select("\"#{main_table}\".*")
-            end
-            subquery = subquery.select(
-              "CAST(\"#{main_table}\".\"#{key}\" AS TEXT) AS cord_key"
-            )
-            subquery.to_sql
-          end
-          query = query.join(' UNION ALL ')
-          records = records.from("(#{query}) AS #{main_table}")
-          if (records.references_values + records.eager_load_values).any?
-            raise 'references() and eager_load() are unsupported when using multiple keys'
-          end
-          unless records.select_values.any?
-            records = records.select("\"#{main_table}\".*")
-          end
-          records = records.select(:cord_key)
-        else
-          records = records.where(id: options[:ids])
-        end
-      end
+      records, aliases = filter_records(driver.all, options[:ids] || [])
 
-      @aliases = {}
       allowed_attributes = if (options[:attributes].present?)
         white_list_attributes(options[:attributes])
       else
         []
       end
+
+      joins = join_dependencies.values_at(*allowed_attributes)
+      records = perform_joins(records, joins)
+
       records_json = []
       records.each do |record|
         if columns.any?
           record_json = record.as_json(
-            only: columns, except: ignore_columns + [:cord_key]
+            only: columns, except: ignore_columns
           )
         else
           record_json = record.as_json(
-            except: ignore_columns + [:cord_key]
+            except: ignore_columns
           )
         end
         allowed_attributes.each do |attr_name|
           record_json[attr_name] = instance_exec(record, &attributes[attr_name])
         end
-        if record.has_attribute?(:cord_key) && record.cord_key != record.id.to_s
-          @aliases[record.cord_key] = record.id
-        end
         records_json.append(record_json)
       end
 
       response_data = {}
-      response_data[:records] = records_json.uniq { |x| x['id'] }
-      response_data[:aliases] = @aliases if @aliases.any?
+      response_data[:records] = records_json
+      response_data[:aliases] = aliases if aliases.any?
       render model.table_name => response_data
 
       @response
@@ -189,5 +163,22 @@ module Cord
       attrs & attribute_names
     end
 
+    def filter_records records, ids
+      return [records.none, {}] unless ids.any?
+      filter_ids = Set.new
+      aliases = {}
+      ([:id] + secondary_keys).each do |key|
+        records.klass.where(key => ids).pluck(:id, key).each do |id, value|
+          aliases[value] = id if value
+          filter_ids << id
+        end
+      end
+      [records.where(id: filter_ids.to_a), aliases]
+    end
+
+    def perform_joins records, joins
+      return records unless joins.any?
+      records.includes(*joins).references(*joins)
+    end
   end
 end
