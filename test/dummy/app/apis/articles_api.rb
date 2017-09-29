@@ -28,6 +28,8 @@ class ArticlesApi < ApplicationApi
 	# scope :published { where(published: false) } # custom scope which isnt on the model, required as cant chain scopes
   #
 	has_many :comments
+
+  ignore_columns :updated_at
 	# belongs_to :author  # adds methods: author
 	# # has_one :forum # adds methods: forum, forum_id
   #
