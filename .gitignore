@@ -15,3 +15,5 @@ pkg/
 
 .byebug_history
 .DS_Store
+
+test/dummy/actions.md
