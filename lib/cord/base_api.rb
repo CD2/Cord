@@ -52,7 +52,7 @@ module Cord
       scopes.each do |name, block|
         ids[name] = instance_exec(dri, &block).all.map(&:id)
       end
-      render model.table_name => {ids: ids}
+      render (resource_name || model.table_name) => {ids: ids}
       @response
     end
 
@@ -88,7 +88,7 @@ module Cord
       response_data = {}
       response_data[:records] = records_json
       response_data[:aliases] = aliases if aliases.any?
-      render model.table_name => response_data
+      render (resource_name || model.table_name) => response_data
 
       @response
     end

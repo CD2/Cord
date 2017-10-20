@@ -68,6 +68,10 @@ module Cord
       self.class.join_dependencies
     end
 
+    def resource_name
+      self.class.given_resource_name
+    end
+
     module ClassMethods
 
 
@@ -196,6 +200,13 @@ module Cord
         member_actions[name] = block
       end
 
+      def resource_name value
+        @resource_name = value
+      end
+
+      def given_resource_name
+        @resource_name
+      end
     end
   end
 end
