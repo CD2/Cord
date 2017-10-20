@@ -139,7 +139,7 @@ module Cord
         single = association_name.to_s.singularize
 
         self.attribute association_name, options
-        self.attribute "#{single}_ids", options do |reocrd|
+        self.attribute "#{single}_ids", options do |record|
           record.send(association_name).ids
         end
         self.attribute "#{single}_count", options do |record|
