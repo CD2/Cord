@@ -131,66 +131,54 @@ module Cord
       # has_many :books
       # book_ids, books, book_count
       def has_many association_name, opts = {}
-        options = opts.to_options
-        joins = options.fetch(:joins, true)
-
-        self.attribute association_name do |record|
-          record.send(association_name)
-        end
+        options = { joins: association_name }.merge(opts.to_options)
         single = association_name.to_s.singularize
-        self.attribute "#{single}_ids"
-        self.attribute "#{single}_count" do |record|
-          record.send(association_name).size
-        end
 
-        if joins
-          self.join_dependency association_name, association_name
-          self.join_dependency "#{single}_ids", association_name
-          self.join_dependency "#{single}_count", association_name
+        self.attribute association_name, options
+        self.attribute "#{single}_ids", options do |reocrd|
+          record.send(association_name).ids
+        end
+        self.attribute "#{single}_count", options do |record|
+          record.send(association_name).size
         end
       end
 
       # has_one :token
       # adds token
       def has_one association_name, opts = {}
-        options = opts.to_options
-        joins = options.fetch(:joins, true)
+        options = { joins: association_name }.merge(opts.to_options)
 
-        self.attribute association_name
-        self.attribute "#{association_name}_id" do |record|
+        self.attribute association_name, options
+        self.attribute "#{association_name}_id", options do |record|
           record.send(association_name)&.id
-        end
-
-        if joins
-          self.join_dependency association_name, association_name
-          self.join_dependency "#{association_name}_id", association_name
         end
       end
 
       def belongs_to association_name, opts = {}
-        options = opts.to_options
-        joins = options.fetch(:joins, true)
+        options = { joins: association_name }.merge(opts.to_options)
 
-        self.attribute association_name
-
-        self.join_dependency association_name, association_name if joins
+        self.attribute association_name, options
       end
 
       def attributes
         @attributes ||= HashWithIndifferentAccess.new
       end
 
-      def attribute name, &block
+      def attribute name, opts = {}, &block
+        options = opts.to_options
+        options.assert_valid_keys :joins
+        joins = options.fetch(:joins, false)
+
         block ||= ->(record){ record.send(name) }
         attributes[name] = block
-      end
 
+        self.join_dependency name, joins if joins
+      end
 
       def permitted_params *args
         return @permitted_params || [] if args.empty?
         @permitted_params = args
       end
-
 
       def collection_actions
         @collection_actions ||= HashWithIndifferentAccess.new
@@ -199,7 +187,6 @@ module Cord
       def action name, &block
         collection_actions[name] = block
       end
-
 
       def member_actions
         @member_actions ||= HashWithIndifferentAccess.new

@@ -28,6 +28,12 @@ class ArticlesApi < ApplicationApi
 	# scope :published { where(published: false) } # custom scope which isnt on the model, required as cant chain scopes
   #
 	has_many :comments
+  has_many :comments1, joins: false
+  has_many :comments2, joins: :sdfsdf
+
+  attribute :joins_test, joins: :comments do |record|
+    record.comments.count
+  end
 
   ignore_columns :updated_at
 	# belongs_to :author  # adds methods: author
@@ -38,11 +44,6 @@ class ArticlesApi < ApplicationApi
 		article.id * 10
 	end
 
-  attribute :zzz do |article|
-    nil
-  end
-
-  join_dependency :zzz, :comments
   #
   # ########## MUTATIONS
   #
