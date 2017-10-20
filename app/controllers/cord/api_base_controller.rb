@@ -7,6 +7,7 @@ class Cord::ApiBaseController < ::ApplicationController
   def schema
     render json: {
       table_name: api.model.table_name,
+      resource_name: api.resource_name,
       model_name: api.model.name,
       columns: api.model.column_names - api.ignore_columns.map(&:to_s),
       attributes: api.attribute_names,

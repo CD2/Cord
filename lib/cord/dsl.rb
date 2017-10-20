@@ -69,7 +69,7 @@ module Cord
     end
 
     def resource_name
-      self.class.given_resource_name
+      self.class.given_resource_name || model.table_name
     end
 
     module ClassMethods
