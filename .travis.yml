@@ -23,7 +23,6 @@ before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - nvm install 6
-  - bundle exec rails db:setup
 script:
   - bundle exec rspec spec/$TEST_SUITE -fd
 after_success:
