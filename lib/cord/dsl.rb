@@ -209,8 +209,20 @@ module Cord
       def before_action name, opts = {}, &block
         name = name.to_sym
         only, except = process_before_action_options opts
-        block ||= eval "proc { #{name} }"
-        before_actions[name] = { block: block, only: only, except: except }
+        unless before_actions[name]
+          before_actions[name] = {
+            block: (block || eval("proc { #{name} }")), only: only, except: except
+          }
+          return
+        end
+        raise "Before action '#{name}' already exists with a different block" if block
+        return before_actions[name][:only] += only if before_actions[name][:only] && only
+        return before_actions[name][:except] += except if before_actions[name][:except] && except
+        raise %(
+          You have defined a before action with '#{before_actions[name][:only] ? 'only' : 'except'}',
+          then attempted to extend it with '#{only ? 'only' : 'except'}'.
+          I am unsure of the correct behaviour here.
+        ).squish
       end
 
       def skip_before_action name, opts = {}

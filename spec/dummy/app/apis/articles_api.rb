@@ -21,6 +21,10 @@ class ArticlesApi < ApplicationApi
     render status: 'complete!'
   end
 
+  before_action :zzz, only: 6
+
+  byebug
+
 	# driver do
   #   if params[:tag]
   #     Article.published.where('body LIKE ?', "%#{params[:tag]}%")
