@@ -6,12 +6,13 @@
 !/tmp/.keep
 pkg/
 
-/test/dummy/db/*.sqlite3
-/test/dummy/db/*.sqlite3-journal
-/test/dummy/log/*
-/test/dummy/tmp/*
-!/test/log/dummy/.keep
-!/test/tmp/dummy/.keep
+/spec/dummy/db/*.sqlite3
+/spec/dummy/db/*.sqlite3-journal
+/spec/dummy/log/*
+/spec/dummy/tmp/*
+!/spec/log/dummy/.keep
+!/spec/tmp/dummy/.keep
+/spec/dummy/node_modules
 
 .byebug_history
 .DS_Store
