@@ -20,18 +20,6 @@ module Cord
       self.class.sorts
     end
 
-    def before_actions
-      self.class.before_actions
-    end
-
-    def around_actions
-      self.class.around_actions
-    end
-
-    def after_actions
-      self.class.after_actions
-    end
-
     def columns
       self.class.columns
     end
@@ -70,6 +58,10 @@ module Cord
 
     def resource_name
       self.class.given_resource_name || model.table_name
+    end
+
+    def before_actions
+      self.class.before_actions
     end
 
     module ClassMethods
@@ -189,6 +181,7 @@ module Cord
       end
 
       def action name, &block
+        check_name!(name)
         collection_actions[name] = block
       end
 
@@ -197,6 +190,7 @@ module Cord
       end
 
       def action_for name, &block
+        check_name!(name)
         member_actions[name] = block
       end
 
@@ -206,6 +200,59 @@ module Cord
 
       def given_resource_name
         @resource_name
+      end
+
+      def before_actions
+        @before_actions ||= (self == Cord::BaseApi ? {} : superclass.before_actions)
+      end
+
+      def before_action name, opts = {}, &block
+        name = name.to_sym
+        only, except = process_before_action_options opts
+        block ||= eval "proc { #{name} }"
+        before_actions[name] = { block: block, only: only, except: except }
+      end
+
+      def skip_before_action name, opts = {}
+        raise "Before action \"#{name}\" is undefined" unless before_actions[name]
+        only, except = process_before_action_options opts
+        if only
+          if before_actions[name][:only]
+            before_actions[name][:only] -= only
+          else
+            before_actions[name][:except] += only
+          end
+        elsif except
+          if before_actions[name][:only]
+            before_actions[name][:only] &= except
+          else
+            before_actions[name][:only] = except - before_actions[name].delete(:except)
+          end
+        else
+          before_actions.delete(name)
+        end
+      end
+
+      def process_before_action_options opts
+        options = opts.to_options
+        options.assert_valid_keys :only, :except
+        raise 'Provide either :only or :except, not both' if options[:only] && options[:except]
+        if options[:only]
+          only = Array.wrap(options[:only])
+          except = nil
+        else
+          only = nil
+          except = Array.wrap(options[:except])
+        end
+        [only, except]
+      end
+
+      def check_name! name
+        raise "Action name \"#{name}\" is already in use" if reserved_name?(name)
+      end
+
+      def reserved_name? name
+        name == 'get' || name == 'ids'
       end
     end
   end

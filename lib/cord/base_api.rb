@@ -2,40 +2,6 @@ require_relative 'dsl'
 module Cord
   class BaseApi
     include DSL
-    include ActiveSupport::Callbacks
-
-    define_callbacks :before_action
-
-    def self.before_action &block
-      set_callback :before_action, :before, &block
-    end
-
-    def run_before_callbacks
-      run_callbacks :before_action
-    end
-
-
-    # class Record
-    #
-    #   def save
-    #     run_callbacks :save do
-    #       puts "- save"
-    #     end
-    #   end
-    # end
-    #
-    # class PersonRecord < Record
-    #   set_callback :save, :before, :saving_message
-    #   def saving_message
-    #     puts "saving..."
-    #   end
-    #
-    #   set_callback :save, :after do |object|
-    #     puts "saved"
-    #   end
-    # end
-
-
 
     def initialize controller, params
       @controller = controller
@@ -46,7 +12,19 @@ module Cord
       @controller
     end
 
+    def perform_before_actions action_name
+      before_actions.each do |name, before_action|
+        next unless (before_action[:only] && before_action[:only].include?(action_name)) ||
+        (before_action[:except] && !before_action[:except].include?(action_name))
+        api.instance_eval &before_action[:block]
+        break if @halted
+      end
+    end
+
     def ids
+      perform_before_actions(:ids)
+      return @response if @halted
+
       dri = params[:sort].present? ? sorted_driver : driver
       ids = {all: dri.all.map(&:id)}
       scopes.each do |name, block|
@@ -57,6 +35,9 @@ module Cord
     end
 
     def get(options={})
+      perform_before_actions(:get)
+      return @response if @halted
+
       records, aliases = filter_records(driver.all, options[:ids] || [])
 
       allowed_attributes = if (options[:attributes].present?)
@@ -108,6 +89,9 @@ module Cord
     end
 
     def perform action_name
+      perform_before_actions(action_name.to_sym)
+      return @response if @halted
+
       if ids = params[:ids]
         action = member_actions[action_name]
         if (action)
@@ -139,8 +123,19 @@ module Cord
     end
 
     def render data
+      raise 'Call to \'render\' after action chain has been halted' if @halted
       @response ||= {}
       @response.merge! data
+    end
+
+    def halt! message = nil
+      if message
+        @response = {}
+        error message
+      else
+        @response = nil
+      end
+      @halted = true
     end
 
     def redirect path

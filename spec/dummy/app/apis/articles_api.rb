@@ -11,7 +11,15 @@ class ArticlesApi < ApplicationApi
     x.where(id: 1)
   end
 
+  before_action(:a, only: :halting_action) { render a: 'ok!' }
+  before_action(:b, only: :halting_action) { halt! }
+  before_action(:c, only: :halting_action) { render c: 'ok!' }
+
   secondary_key :name
+
+  action :halting_action do
+    render status: 'complete!'
+  end
 
 	# driver do
   #   if params[:tag]

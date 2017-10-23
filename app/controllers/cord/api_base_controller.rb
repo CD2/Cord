@@ -1,9 +1,4 @@
 class Cord::ApiBaseController < ::ApplicationController
-
-  before_action do
-    api.run_before_callbacks
-  end
-
   def schema
     render json: {
       table_name: api.model.table_name,
@@ -39,6 +34,7 @@ class Cord::ApiBaseController < ::ApplicationController
   private
 
   def api
+    return @api if @api
     api_class_name = "#{params[:api].camelize}Api"
     api_class = api_class_name.constantize
     raise NotImplementedError.new("#{api_class_name} is an abstract class and cannot be instantiated") if api_class.abstract?
