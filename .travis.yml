@@ -8,7 +8,7 @@ env:
   global:
     - DB=pgsql
     - RAILS_ENV=test
-    - CC_TEST_REPORTER_ID=d0847083025b9315c404b9777d724031596742b6b569cff033a8b0216ca53db1
+    - CC_TEST_REPORTER_ID=18f06c73625ebb4be1cb881dde7148edc4926259e1bdca9907c9f16a3cc27c97
 services:
   - postgresql
 addons:
