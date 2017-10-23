@@ -97,6 +97,7 @@ module Cord
         if (action)
           driver.where(id: ids).find_each do |record|
             instance_exec(record, &action)
+            return @response if @halted
           end
         else
           error('no action found')
