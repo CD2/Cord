@@ -25,7 +25,7 @@ module Cord
     end
 
     def ignore_columns
-      self.class.ignore_columns
+      self.class.ignore_columns.map(&:to_s)
     end
 
     def scopes
@@ -54,6 +54,10 @@ module Cord
 
     def join_dependencies
       self.class.join_dependencies
+    end
+
+    def sql_attributes
+      self.class.sql_attributes
     end
 
     def resource_name
@@ -115,6 +119,14 @@ module Cord
         join_dependencies[name] = association
       end
 
+      def sql_attributes
+        @sql_attributes ||= {}.with_indifferent_access
+      end
+
+      def sql_attribute name, sql
+        sql_attributes[name] = sql
+      end
+
       def sorts
         @sorts ||= {}
       end
@@ -137,6 +149,12 @@ module Cord
         self.attribute "#{single}_count", options do |record|
           record.send(association_name).size
         end
+
+        if options[:joins] && !options.has_key?(:sql)
+          sql_attribute association_name, 'array_remove(array_agg(:table), NULL)'
+          sql_attribute "#{single}_ids", 'array_remove(array_agg(:table.id), NULL)'
+          sql_attribute "#{single}_count", 'COUNT(:table.id)'
+        end
       end
 
       # has_one :token
@@ -148,12 +166,21 @@ module Cord
         self.attribute "#{association_name}_id", options do |record|
           record.send(association_name)&.id
         end
+
+        if options[:joins] && !options.has_key?(:sql)
+          sql_attribute association_name, 'row_to_json(:table)'
+          sql_attribute "#{association_name}_id", ':table.id'
+        end
       end
 
       def belongs_to association_name, opts = {}
         options = { joins: association_name }.merge(opts.to_options)
 
         self.attribute association_name, options
+
+        if options[:joins] && !options.has_key?(:sql)
+          sql_attribute association_name, 'row_to_json(:table)'
+        end
       end
 
       def attributes
@@ -162,13 +189,15 @@ module Cord
 
       def attribute name, opts = {}, &block
         options = opts.to_options
-        options.assert_valid_keys :joins
+        options.assert_valid_keys :joins, :sql
         joins = options.fetch(:joins, false)
+        sql = options.fetch(:sql, nil)
 
         block ||= ->(record){ record.send(name) }
         attributes[name] = block
 
         self.join_dependency name, joins if joins
+        self.sql_attribute name, sql if sql
       end
 
       def permitted_params *args

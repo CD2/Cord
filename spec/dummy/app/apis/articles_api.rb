@@ -23,8 +23,6 @@ class ArticlesApi < ApplicationApi
 
   before_action :zzz, only: 6
 
-  byebug
-
 	# driver do
   #   if params[:tag]
   #     Article.published.where('body LIKE ?', "%#{params[:tag]}%")
@@ -41,10 +39,14 @@ class ArticlesApi < ApplicationApi
   #
 	has_many :comments
   has_many :comments1, joins: false
-  has_many :comments2, joins: :sdfsdf
+  has_many :comments2, joins: :comments
 
-  attribute :joins_test, joins: :comments do |record|
+  attribute :joins_test, joins: :comments, sql: 'COUNT(:table.id)' do |record|
     record.comments.count
+  end
+
+  attribute :name, sql: "'override test: postgres'" do
+    'override test: regular'
   end
 
   ignore_columns :updated_at

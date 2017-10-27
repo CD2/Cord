@@ -46,6 +46,11 @@ module Cord
         []
       end
 
+      if Cord.enable_postgres_rendering && allowed_attributes.all? { |x| postgres_renderable?(x) }
+        records = postgres_render(records, allowed_attributes)
+        return JSON.generate (resource_name || model.table_name) => records
+      end
+
       joins = join_dependencies.values_at(*allowed_attributes)
       records = perform_joins(records, joins)
 
@@ -175,6 +180,54 @@ module Cord
     def perform_joins records, joins
       return records unless joins.any?
       records.includes(*joins).references(*joins)
+    end
+
+    def postgres_renderable? attribute
+      return true if attribute.in? model.column_names
+      return true if sql_attributes[attribute]
+      return false
+    end
+
+    def postgres_render(records, attributes)
+      attributes = (model.column_names + attributes) - ignore_columns
+      selects = (attributes - sql_attributes.keys).map do |x|
+        "#{model.table_name}.#{x}"
+      end
+      joins = []
+
+      attributes.each do |attribute|
+        next unless (sql = sql_attributes[attribute])
+        if (join = join_dependencies[attribute])
+          joins << join
+          table = model.reflect_on_association(join)&.table_name
+          sql = sql.gsub(':table', table) if table
+        end
+        selects << %((#{sql}) AS "#{attribute}")
+      end
+
+      if joins.any?
+        records = records.left_joins(*joins.uniq).group(:id)
+      end
+
+      if selects.any?
+        selects = selects.uniq.join(', ')
+        records = records.select(selects)
+      end
+
+      response = ActiveRecord::Base.connection.execute(
+        "SELECT array_to_json(array_agg(json)) FROM (#{records.order(:id).to_sql}) AS json"
+      )
+      JSONString.new(response.values.first.first)
+    end
+
+    class JSONString
+      def initialize json
+        @json = json
+      end
+
+      def to_json *args, &block
+        @json
+      end
     end
   end
 end
