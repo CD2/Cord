@@ -200,7 +200,7 @@ module Cord
         if (join = join_dependencies[attribute])
           joins << join
           table = model.reflect_on_association(join)&.table_name
-          sql = sql.gsub(':table', table) if table
+          sql = sql.gsub(':table', remove_schema(table)) if table
         end
         selects << %((#{sql}) AS "#{attribute}")
       end
@@ -218,6 +218,10 @@ module Cord
         "SELECT array_to_json(array_agg(json)) FROM (#{records.order(:id).to_sql}) AS json"
       )
       JSONString.new(response.values.first.first)
+    end
+
+    def remove_schema str
+      str.split('.').last
     end
 
     class JSONString
