@@ -28,6 +28,7 @@ module Cord
       dri = params[:sort].present? ? sorted_driver : driver
       ids = {all: dri.all.map(&:id)}
       scopes.each do |name, block|
+        next unless instance_exec(dri, &block)
         ids[name] = instance_exec(dri, &block).all.map(&:id)
       end
       render (resource_name || model.table_name) => {ids: ids}
