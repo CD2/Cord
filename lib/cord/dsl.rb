@@ -151,8 +151,8 @@ module Cord
         end
 
         if options[:joins] && !options.has_key?(:sql)
-          sql_attribute association_name, 'array_remove(array_agg(:table), NULL)'
-          sql_attribute "#{single}_ids", 'array_remove(array_agg(:table.id), NULL)'
+          sql_attribute association_name, 'array_agg(:table) FILTER (WHERE :table.id IS NOT NULL)'
+          sql_attribute "#{single}_ids", 'array_agg(:table.id) FILTER (WHERE :table.id IS NOT NULL)'
           sql_attribute "#{single}_count", 'COUNT(:table.id)'
         end
       end
