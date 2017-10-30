@@ -28,8 +28,8 @@ module Cord
       dri = params[:sort].present? ? sorted_driver : driver
       ids = {all: dri.all.map(&:id)}
       scopes.each do |name, block|
-        next unless instance_exec(dri, &block)
-        ids[name] = instance_exec(dri, &block).all.map(&:id)
+        next unless (result = instance_exec(dri, &block))
+        ids[name] = result.all.map(&:id)
       end
       render (resource_name || model.table_name) => {ids: ids}
       @response
@@ -201,7 +201,7 @@ module Cord
         if (join = join_dependencies[attribute])
           joins << join
           table = model.reflect_on_association(join)&.table_name
-          sql = sql.gsub(':table', remove_schema(table)) if table
+          sql = sql.gsub(':table', table) if table
         end
         selects << %((#{sql}) AS "#{attribute}")
       end
@@ -219,10 +219,6 @@ module Cord
         "SELECT array_to_json(array_agg(json)) FROM (#{records.order(:id).to_sql}) AS json"
       )
       JSONString.new(response.values.first.first)
-    end
-
-    def remove_schema str
-      str.split('.').last
     end
 
     class JSONString
