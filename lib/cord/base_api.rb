@@ -48,8 +48,11 @@ module Cord
       end
 
       if Cord.enable_postgres_rendering && allowed_attributes.all? { |x| postgres_renderable?(x) }
-        records = postgres_render(records, allowed_attributes)
-        return JSON.generate (resource_name || model.table_name) => records
+        records_json = postgres_render(records, allowed_attributes)
+        response_data = {}
+        response_data[:records] = records_json
+        response_data[:aliases] = aliases if aliases.any?
+        return JSON.generate (resource_name || model.table_name) => response_data
       end
 
       joins = join_dependencies.values_at(*allowed_attributes)
