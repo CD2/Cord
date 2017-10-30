@@ -168,8 +168,8 @@ module Cord
         end
 
         if options[:joins] && !options.has_key?(:sql)
-          sql_attribute association_name, 'row_to_json(:table)'
-          sql_attribute "#{association_name}_id", ':table.id'
+          sql_attribute association_name, '(array_agg(:table))[1]'
+          sql_attribute "#{association_name}_id", '(array_agg(:table.id))[1]'
         end
       end
 
@@ -179,7 +179,7 @@ module Cord
         self.attribute association_name, options
 
         if options[:joins] && !options.has_key?(:sql)
-          sql_attribute association_name, 'row_to_json(:table)'
+          sql_attribute association_name, '(array_agg(:table))[1]'
         end
       end
 

@@ -41,6 +41,8 @@ class ArticlesApi < ApplicationApi
   has_many :comments1, joins: false
   has_many :comments2, joins: :comments
 
+  has_one :image
+
   attribute :joins_test, joins: :comments, sql: 'COUNT(:table.id)' do |record|
     record.comments.count
   end
