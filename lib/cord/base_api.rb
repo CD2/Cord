@@ -17,7 +17,7 @@ module Cord
         next unless (before_action[:only] && before_action[:only].include?(action_name)) ||
         (before_action[:except] && !before_action[:except].include?(action_name))
         api.instance_eval &before_action[:block]
-        break if @halted
+        break if halted?
       end
     end
 
@@ -37,7 +37,7 @@ module Cord
 
     def get(options={})
       perform_before_actions(:get)
-      return @response if @halted
+      return @response if halted?
 
       records, aliases = filter_records(driver.all, options[:ids] || [])
 
@@ -96,14 +96,14 @@ module Cord
 
     def perform action_name
       perform_before_actions(action_name.to_sym)
-      return @response if @halted
+      return @response if halted?
 
       if ids = params[:ids]
         action = member_actions[action_name]
         if (action)
           driver.where(id: ids).find_each do |record|
             instance_exec(record, &action)
-            return @response if @halted
+            return @response if halted?
           end
         else
           error('no action found')
@@ -136,6 +136,7 @@ module Cord
     end
 
     def halt! message = nil
+      return if halted?
       if message
         @response = {}
         error message
@@ -143,6 +144,10 @@ module Cord
         @response = nil
       end
       @halted = true
+    end
+
+    def halted?
+      !!@halted
     end
 
     def redirect path
