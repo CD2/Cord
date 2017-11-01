@@ -223,6 +223,8 @@ module Cord
         records = records.select(selects)
       end
 
+      return JSONString.new('[]') if records.to_sql.blank?
+
       response = ActiveRecord::Base.connection.execute(
         "SELECT array_to_json(array_agg(json)) FROM (#{records.order(:id).to_sql}) AS json"
       )
