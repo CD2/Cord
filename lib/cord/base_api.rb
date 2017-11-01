@@ -228,7 +228,8 @@ module Cord
       response = ActiveRecord::Base.connection.execute(
         "SELECT array_to_json(array_agg(json)) FROM (#{records.order(:id).to_sql}) AS json"
       )
-      JSONString.new(response.values.first.first)
+
+      JSONString.new(response.values.first.first || '[]')
     end
 
     class JSONString
