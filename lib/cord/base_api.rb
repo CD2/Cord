@@ -199,9 +199,14 @@ module Cord
 
     def postgres_render(records, attributes)
       attributes = (model.column_names + attributes) - ignore_columns
-      selects = (attributes - sql_attributes.keys).map do |x|
+      selects = (attributes - sql_attributes.keys - model.defined_enums.keys).map do |x|
         "#{model.table_name}.#{x}"
       end
+
+      model.defined_enums.each do |field, enum|
+        selects << %('#{enum.invert.to_json}'::jsonb->#{field}::text AS "#{field}")
+      end
+
       joins = []
 
       attributes.each do |attribute|
