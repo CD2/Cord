@@ -16,19 +16,20 @@ class Cord::ApiBaseController < ::ApplicationController
   end
 
   def ids
-    render json: api.ids
+    result, status = api.ids
+    render json: result, status: (status || 200)
   end
 
   def index
     ids = params[:ids]
     attributes = params[:attributes]
-    result = api.get(ids: ids, attributes: attributes)
-    render json: result
+    result, status = api.get(ids: ids, attributes: attributes)
+    render json: result, status: (status || 200)
   end
 
   def perform
-    result = api.perform(params[:action_name])
-    render json: result
+    result, status = api.perform(params[:action_name])
+    render json: result, status: (status || 200)
   end
 
   private

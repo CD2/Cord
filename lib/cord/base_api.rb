@@ -23,7 +23,7 @@ module Cord
 
     def ids
       perform_before_actions(:ids)
-      return @response if @halted
+      return [@response, @status] if @halted
 
       dri = params[:sort].present? ? sorted_driver : driver
       ids = {all: dri.all.map(&:id)}
@@ -32,14 +32,19 @@ module Cord
         ids[name] = result.all.map(&:id)
       end
       render (resource_name || model.table_name) => {ids: ids}
-      @response
+      [@response, @status]
     end
 
     def get(options={})
       perform_before_actions(:get)
-      return @response if halted?
+      return [@response, @status] if halted?
 
-      records, aliases = filter_records(driver.all, options[:ids] || [])
+      records = driver.all
+      ids, aliases = filter_records(records, options[:ids] || [])
+
+      return [@response, 404] if ids.none?
+
+      records = records.where(id: ids)
 
       allowed_attributes = if (options[:attributes].present?)
         white_list_attributes(options[:attributes])
@@ -80,7 +85,7 @@ module Cord
       response_data[:aliases] = aliases if aliases.any?
       render (resource_name || model.table_name) => response_data
 
-      @response
+      [@response, @status]
     end
 
     def sorted_driver
@@ -99,14 +104,14 @@ module Cord
 
     def perform action_name
       perform_before_actions(action_name.to_sym)
-      return @response if halted?
+      return [@response, @status] if halted?
 
       if ids = params[:ids]
         action = member_actions[action_name]
         if (action)
           driver.where(id: ids).find_each do |record|
             instance_exec(record, &action)
-            return @response if halted?
+            return [@response, @status] if halted?
           end
         else
           error('no action found')
@@ -119,7 +124,7 @@ module Cord
           error('no action found')
         end
       end
-      @response
+      [@response, @status]
     end
 
     def method_missing *args, &block
@@ -183,7 +188,7 @@ module Cord
           filter_ids << id
         end
       end
-      [records.where(id: filter_ids.to_a), aliases]
+      [filter_ids.to_a, aliases]
     end
 
     def perform_joins records, joins
