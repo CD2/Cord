@@ -183,7 +183,7 @@ module Cord
       filter_ids = Set.new
       aliases = {}
       ([:id] + secondary_keys).each do |key|
-        records.klass.where(key => ids).pluck(:id, key).each do |id, value|
+        records.where(key => ids).pluck(:id, key).each do |id, value|
           aliases[value] = id if value
           filter_ids << id
         end
