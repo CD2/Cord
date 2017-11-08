@@ -42,7 +42,10 @@ module Cord
       records = driver.all
       ids, aliases = filter_records(records, options[:ids] || [])
 
-      return [@response, 404] if ids.none?
+      return [
+        { (resource_name || model.table_name) => { records: [] } },
+        404
+      ] if ids.none?
 
       records = records.where(id: ids)
 

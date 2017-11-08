@@ -20,6 +20,7 @@ group :development do
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false
   gem 'pg'
+  gem 'rack-cors'
 end
 
 group :test do
