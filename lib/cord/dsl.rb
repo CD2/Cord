@@ -155,9 +155,6 @@ module Cord
         end
 
         if options[:joins] && !options.has_key?(:sql)
-          sql_attribute association_name, %(
-            coalesce(array_agg(:table) FILTER (WHERE :table.id IS NOT NULL), '{}')
-          )
           sql_attribute "#{single}_ids", %(
             coalesce(array_agg(:table.id) FILTER (WHERE :table.id IS NOT NULL), '{}')
           )
@@ -176,7 +173,6 @@ module Cord
         end
 
         if options[:joins] && !options.has_key?(:sql)
-          sql_attribute association_name, '(array_agg(:table))[1]'
           sql_attribute "#{association_name}_id", '(array_agg(:table.id))[1]'
         end
       end
@@ -185,10 +181,6 @@ module Cord
         options = { joins: association_name }.merge(opts.to_options)
 
         self.attribute association_name, options
-
-        if options[:joins] && !options.has_key?(:sql)
-          sql_attribute association_name, '(array_agg(:table))[1]'
-        end
       end
 
       def attributes
