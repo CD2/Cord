@@ -3,9 +3,9 @@ class ArticlesApi < ApplicationApi
   # # optional | autoloads all assocations and scopes (maybe methods?)
 	# # api_for Article
   #
-  driver {
-    Article.includes(:comments)
-  } # limit all results to a subset of the model
+  driver Article
+
+  # enable_postgres_rendering false
 
   scope :thing do |x|
     x.where(id: 1)
@@ -16,6 +16,9 @@ class ArticlesApi < ApplicationApi
   before_action(:c, only: :halting_action) { render c: 'ok!' }
 
   secondary_key :name
+
+  attribute(:x) { |r| r.id * 10 }
+  attribute(:y) { |r| r.id * 5 }
 
   action :halting_action do
     render status: 'complete!'

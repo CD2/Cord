@@ -16,6 +16,10 @@ module Cord
       driver.model
     end
 
+    def postgres_rendering_enabled?
+      self.class.postgres_rendering_enabled?
+    end
+
     def sorts
       self.class.sorts
     end
@@ -298,6 +302,15 @@ module Cord
 
       def reserved_name? name
         name == 'get' || name == 'ids'
+      end
+
+      def postgres_rendering_enabled?
+        return @postgres_rendering_enabled unless @postgres_rendering_enabled.nil?
+        @postgres_rendering_enabled = Cord.enable_postgres_rendering
+      end
+
+      def enable_postgres_rendering value
+        @postgres_rendering_enabled = value
       end
     end
   end

@@ -55,7 +55,7 @@ module Cord
         []
       end
 
-      if Cord.enable_postgres_rendering && allowed_attributes.all? { |x| postgres_renderable?(x) }
+      if postgres_rendering_enabled? && allowed_attributes.all? { |x| postgres_renderable?(x) }
         records_json = postgres_render(records, allowed_attributes)
         response_data = {}
         response_data[:records] = records_json
