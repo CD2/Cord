@@ -26,7 +26,8 @@ module Cord
       return [@response, @status] if @halted
 
       dri = params[:sort].present? ? sorted_driver : driver
-      ids = {all: dri.all.map(&:id)}
+      dri = search_filter(dri) if params[:search]
+      ids = { all: dri.all.map(&:id) }
       scopes.each do |name, block|
         next unless (result = instance_exec(dri, &block))
         ids[name] = result.all.map(&:id)
@@ -92,17 +93,24 @@ module Cord
     end
 
     def sorted_driver
-      col, dir = params[:sort].split(' ')
-      unless dir.in?(%w[ASC DESC])
-        error "sort direction must be either DESC or ASC, instead got #{dir}"
+      col, dir = params[:sort].downcase.split(' ')
+      unless dir.in?(%w[asc desc])
+        error "sort direction must be either 'asc' or 'desc', instead got '#{dir}'"
         return driver
       end
-      if sort_block = self.sorts[col]
+      if (sort_block = self.sorts[col])
         instance_exec(driver, dir, &sort_block)
+      elsif col.in?(model.column_names)
+        driver.order(col => dir)
       else
         error "unknown sort #{col}"
         driver
       end
+    end
+
+    def search_filter(driver)
+      condition = searchable_columns.map { |col| "#{col} LIKE :term" }.join ' OR '
+      driver.where(condition, term: "%#{params[:search]}%")
     end
 
     def perform action_name

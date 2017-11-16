@@ -24,6 +24,10 @@ module Cord
       self.class.sorts
     end
 
+    def searchable_columns
+      self.class.searchable_by
+    end
+
     def columns
       self.class.columns
     end
@@ -138,6 +142,11 @@ module Cord
       def sort name, &block
         block ||= ->(driver, dir){ driver.order(name => dir) }
         sorts[name.to_s] = block
+      end
+
+      def searchable_by *cols
+        @searchable_columns ||= []
+        @searchable_columns += cols
       end
 
       # has_many :books

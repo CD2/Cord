@@ -26,6 +26,8 @@ class ArticlesApi < ApplicationApi
 
   before_action :zzz, only: 6
 
+  searchable_by :name
+
 	# driver do
   #   if params[:tag]
   #     Article.published.where('body LIKE ?', "%#{params[:tag]}%")
