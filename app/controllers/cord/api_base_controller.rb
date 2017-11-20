@@ -27,6 +27,12 @@ class Cord::ApiBaseController < ::ApplicationController
     render json: result, status: (status || 200)
   end
 
+  def fields
+    attributes = params[:attributes]
+    result, status = api.fields(attributes: attributes)
+    render json: result, status: (status || 200)
+  end
+
   def perform
     result, status = api.perform(params[:action_name])
     render json: result, status: (status || 200)

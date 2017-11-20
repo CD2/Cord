@@ -103,7 +103,7 @@ module Cord
       end
 
       def scopes
-        @scopes ||= {}
+        @scopes ||= {}.with_indifferent_access
       end
 
       def scope name, &block

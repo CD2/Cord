@@ -95,6 +95,27 @@ module Cord
       [@response, @status]
     end
 
+    def fields(options={})
+      perform_before_actions(:fields)
+      return [@response, @status] if halted?
+
+      records = params[:sort].present? ? sorted_driver : driver
+      records = search_filter(records) if params[:search]
+
+      if (block = scopes[params[:scope]])
+        records = instance_exec(records, &block)
+      end
+
+      requested_attributes = (options[:attributes].presence || [])
+      allowed_attributes = white_list_fields(requested_attributes)
+
+      fields_json = postgres_render(records, allowed_attributes, pluck: true)
+      response_data = {}
+      response_data[:records] = fields_json
+
+      JSON.generate (resource_name || model.table_name) => response_data
+    end
+
     def sorted_driver
       col, dir = params[:sort].downcase.split(' ')
       unless dir.in?(%w[asc desc])
@@ -193,6 +214,12 @@ module Cord
       attrs & attribute_names
     end
 
+    def white_list_fields(requested_attributes)
+      blacklist = requested_attributes - postgres_renderable_attributes
+      raise "Unknown attributes: #{blacklist.join(', ')}" if blacklist.any?
+      (['id'] + requested_attributes) & postgres_renderable_attributes
+    end
+
     def filter_records records, ids
       return [records.none, {}] unless ids.any?
       filter_ids = Set.new
@@ -211,19 +238,29 @@ module Cord
       records.includes(*joins).references(*joins)
     end
 
+    def postgres_renderable_attributes
+      sql_attributes.keys + model.column_names
+    end
+
     def postgres_renderable? attribute
       return true if attribute.in? model.column_names
       return true if sql_attributes[attribute]
       return false
     end
 
-    def postgres_render(records, attributes)
-      attributes = (model.column_names + attributes) - ignore_columns
+    def postgres_render(records, attributes, pluck: false)
+      if pluck
+        attributes = attributes - ignore_columns
+      else
+        attributes = (model.column_names + attributes) - ignore_columns
+      end
+
       selects = (attributes - sql_attributes.keys - model.defined_enums.keys).map do |x|
         "#{model.table_name}.#{x}"
       end
 
       model.defined_enums.each do |field, enum|
+        next unless attributes.include? field
         selects << %('#{enum.invert.to_json}'::jsonb->#{field}::text AS "#{field}")
       end
 
@@ -250,9 +287,17 @@ module Cord
 
       return JSONString.new('[]') if records.to_sql.blank?
 
-      response = ActiveRecord::Base.connection.execute(
-        "SELECT array_to_json(array_agg(json)) FROM (#{records.order(:id).to_sql}) AS json"
-      )
+      # if pluck
+      #   fields = attributes.map{ |x| "json.#{x}" }.join(', ')
+      #   response = ActiveRecord::Base.connection.execute %(
+      #     SELECT array_to_json(array_agg(json_build_array(#{fields})))
+      #     FROM (#{records.order(:id).to_sql}) AS json
+      #   ).squish
+      # else
+        response = ActiveRecord::Base.connection.execute(
+          "SELECT array_to_json(array_agg(json)) FROM (#{records.order(:id).to_sql}) AS json"
+        )
+      # end
 
       JSONString.new(response.values.first.first || '[]')
     end
