@@ -30,13 +30,23 @@ module Cord
 
       dri = params[:sort].present? ? sorted_driver : driver
       dri = search_filter(dri) if params[:search]
-      ids = { all: dri.all.map(&:id) }
-      scopes.each do |name, block|
-        next unless (result = instance_exec(dri, &block))
-        ids[name] = result.all.map(&:id)
+      if params[:scope]
+        raise 'unknown scope' unless (block = scopes[params[:scope]])
+        name = params[:scope]
+        dri = instance_exec(dri, &block)
+      else
+        name = :all
+        dri = dri.all
       end
-      render (resource_name || model.table_name) => {ids: ids}
-      [@response, @status]
+
+
+      response = ActiveRecord::Base.connection.execute(
+        "SELECT array_to_json(array_agg(json.id)) FROM (#{dri.order(:id).to_sql}) AS json"
+      )
+
+      ids = JSONString.new(response.values.first.first || '[]')
+
+      JSON.generate (resource_name || model.table_name) => { ids: { name => ids } }
     end
 
     def get(options={})
