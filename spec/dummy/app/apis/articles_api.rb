@@ -5,6 +5,14 @@ class ArticlesApi < ApplicationApi
   #
   driver Article
 
+  crud_actions :create, :update, :destroy
+  permit_params :name
+
+  before_destroy do |article|
+    puts article.inspect
+    halt! 'stop!'
+  end
+
   # enable_postgres_rendering false
 
   scope :thing do |x|

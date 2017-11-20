@@ -1,7 +1,10 @@
 require_relative 'dsl'
+require_relative 'crud'
+
 module Cord
   class BaseApi
     include DSL
+    include CRUD
 
     def initialize controller, params
       @controller = controller
@@ -154,7 +157,7 @@ module Cord
       @response.merge! data
     end
 
-    def halt! message = nil
+    def halt! message = nil, status: 401
       return if halted?
       if message
         @response = {}
@@ -162,6 +165,7 @@ module Cord
       else
         @response = nil
       end
+      @status = status if status
       @halted = true
     end
 
