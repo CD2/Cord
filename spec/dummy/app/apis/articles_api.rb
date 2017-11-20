@@ -28,6 +28,10 @@ class ArticlesApi < ApplicationApi
 
   searchable_by :name
 
+  collection_select :comments, Comment do |comment|
+    comment.body
+  end
+
 	# driver do
   #   if params[:tag]
   #     Article.published.where('body LIKE ?', "%#{params[:tag]}%")

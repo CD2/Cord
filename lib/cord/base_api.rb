@@ -138,6 +138,28 @@ module Cord
       [@response, @status]
     end
 
+    def collection_select label
+      perform_before_actions(:collection_select)
+      return [@response, @status] if halted?
+
+      unless collection_selects[label]
+        error('no collection select found')
+        return [@response, @status]
+      end
+
+      records = collection_selects[label][:collection]
+      records_json = []
+
+      records.order(:id).all.each do |record|
+        field = instance_exec(record, &collection_selects[label][:block])
+        records_json << [record.id, field]
+      end
+
+      render label => records_json
+
+      [@response, @status]
+    end
+
     def method_missing *args, &block
       controller.send(*args, &block)
     end

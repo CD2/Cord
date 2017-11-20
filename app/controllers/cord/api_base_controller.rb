@@ -32,6 +32,11 @@ class Cord::ApiBaseController < ::ApplicationController
     render json: result, status: (status || 200)
   end
 
+  def collection_select
+    result, status = api.collection_select(params[:label])
+    render json: result, status: (status || 200)
+  end
+
   private
 
   def api
