@@ -76,10 +76,6 @@ module Cord
       self.class.before_actions
     end
 
-    def collection_selects
-      self.class.collection_selects
-    end
-
     module ClassMethods
 
 
@@ -234,15 +230,6 @@ module Cord
       def action_for name, &block
         check_name!(name)
         member_actions[name] = block
-      end
-
-      def collection_selects
-        @collection_selects ||= HashWithIndifferentAccess.new
-      end
-
-      def collection_select name, collection, &block
-        block ||= ->(record){ record.send(name) }
-        collection_selects[name] = { block: block, collection: collection }
       end
 
       def resource_name value
