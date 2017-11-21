@@ -121,7 +121,7 @@ module Cord
 
       fields_json = postgres_render(records, allowed_attributes, pluck: true)
       response_data = {}
-      response_data[:records] = fields_json
+      response_data[:fields] = fields_json
 
       JSON.generate (resource_name || model.table_name) => response_data
     end
