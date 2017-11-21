@@ -30,23 +30,24 @@ module Cord
 
       dri = params[:sort].present? ? sorted_driver : driver
       dri = search_filter(dri) if params[:search]
-      if params[:scope] && params[:scope] != 'all'
-        raise 'unknown scope' unless (block = scopes[params[:scope]])
+      requested_scopes = Array.wrap(params[:scope]).uniq
+
+      requested_scopes = ['all'] unless requested_scopes.any?
+      available_scopes = { 'all' => proc(&:itself) }.merge(scopes)
+
+      ids = {}
+
+      requested_scopes.each do |scope|
+        raise 'unknown scope' unless (block = available_scopes[scope])
         name = params[:scope]
-        dri = instance_exec(dri, &block)
-      else
-        name = :all
-        dri = dri.all
+        scoped_dri = instance_exec(dri.all, &block)
+        response = ActiveRecord::Base.connection.execute(
+          "SELECT array_to_json(array_agg(json.id)) FROM (#{scoped_dri.order(:id).to_sql}) AS json"
+        )
+        ids[scope] = JSONString.new(response.values.first.first || '[]')
       end
 
-
-      response = ActiveRecord::Base.connection.execute(
-        "SELECT array_to_json(array_agg(json.id)) FROM (#{dri.order(:id).to_sql}) AS json"
-      )
-
-      ids = JSONString.new(response.values.first.first || '[]')
-
-      JSON.generate (resource_name || model.table_name) => { ids: { name => ids } }
+      JSON.generate (resource_name || model.table_name) => { ids: ids }
     end
 
     def get(options={})
