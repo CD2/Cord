@@ -30,7 +30,7 @@ module Cord
 
       dri = params[:sort].present? ? sorted_driver : driver
       dri = search_filter(dri) if params[:search]
-      if params[:scope]
+      if params[:scope] && !params[:scope] == 'all'
         raise 'unknown scope' unless (block = scopes[params[:scope]])
         name = params[:scope]
         dri = instance_exec(dri, &block)
