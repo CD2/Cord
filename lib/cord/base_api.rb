@@ -39,7 +39,6 @@ module Cord
 
       requested_scopes.each do |scope|
         raise 'unknown scope' unless (block = available_scopes[scope])
-        name = params[:scope]
         scoped_dri = instance_exec(dri.all, &block)
         response = ActiveRecord::Base.connection.execute(
           "SELECT array_to_json(array_agg(json.id)) FROM (#{scoped_dri.order(:id).to_sql}) AS json"
@@ -113,14 +112,21 @@ module Cord
       records = params[:sort].present? ? sorted_driver : driver
       records = search_filter(records) if params[:search]
 
-      if (block = scopes[params[:scope]])
-        records = instance_exec(records, &block)
-      end
+      requested_scopes = Array.wrap(params[:scope]).uniq
+      requested_scopes = ['all'] unless requested_scopes.any?
+      available_scopes = { 'all' => proc(&:itself) }.merge(scopes)
 
       requested_attributes = (options[:attributes].presence || [])
       allowed_attributes = white_list_fields(requested_attributes)
 
-      fields_json = postgres_render(records, allowed_attributes, pluck: true)
+      fields_json = {}
+
+      requested_scopes.each do |scope|
+        raise 'unknown scope' unless (block = available_scopes[scope])
+        scoped_records = instance_exec(records.all, &block)
+        fields_json[scope] = postgres_render(scoped_records, allowed_attributes, pluck: true)
+      end
+
       response_data = {}
       response_data[:fields] = fields_json
 
