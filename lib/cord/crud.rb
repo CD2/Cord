@@ -96,6 +96,7 @@ module Cord
     end
 
     def resource_params
+      return {} if params[resource_name.singularize]&.blank?
       params.require(resource_name.singularize).permit(permitted_params)
     end
 
