@@ -196,17 +196,23 @@ module Cord
         @attributes ||= HashWithIndifferentAccess.new
       end
 
-      def attribute name, opts = {}, &block
-        options = opts.to_options
+      def attribute *names, &block
+        options = names.extract_options!.to_options
         options.assert_valid_keys :joins, :sql
         joins = options.fetch(:joins, false)
         sql = options.fetch(:sql, nil)
 
-        block ||= ->(record){ record.send(name) }
-        attributes[name] = block
+        unless names.one?
+          raise ArgumentError, 'may only provide a block for single attributes' if block
+          raise ArgumentError, 'may only provide an sql option for single attributes' if sql
+        end
 
-        self.join_dependency name, joins if joins
-        self.sql_attribute name, sql if sql
+        names.each do |name|
+          attributes[name] = block || ->(record){ record.send(name) }
+
+          self.join_dependency name, joins if joins
+          self.sql_attribute name, sql if sql
+        end
       end
 
       def permitted_params *args
