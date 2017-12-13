@@ -13,6 +13,17 @@ class ArticlesApi < ApplicationApi
     halt! 'stop!'
   end
 
+  before_update :my_method
+  before_create :my_method2
+
+  def my_method
+    halt! 'no arguments!'
+  end
+
+  def my_method2 article
+    halt! article.to_json
+  end
+
   # enable_postgres_rendering false
 
   scope :thing do |x|

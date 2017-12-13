@@ -65,7 +65,17 @@ module Cord
         eval <<-RUBY
         def self.#{callback} name = nil, &block
           raise ArgumentError, 'Must provide either a block or a method name' unless name || block
-          block ||= ->(resource){ resource.send(name) }
+          name = name.to_sym if name
+          block ||= ->(resource){
+            case method(name).arity
+            when 0
+              send(name)
+            when 1
+              send(name, resource)
+            else
+              raise ArgumentError, 'Method "' + name.to_s + '" takes unexpected input, use a block'
+            end
+          }
           crud_callbacks[:#{callback}] = block
         end
         RUBY
