@@ -150,7 +150,7 @@ module Cord
     end
 
     def search_filter(driver)
-      condition = searchable_columns.map { |col| "#{col} LIKE :term" }.join ' OR '
+      condition = searchable_columns.map { |col| "#{col} ILIKE :term" }.join ' OR '
       driver.where(condition, term: "%#{params[:search]}%")
     end
 
