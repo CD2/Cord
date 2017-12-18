@@ -247,7 +247,7 @@ module Cord
       end
 
       def before_actions
-        @before_actions ||= (self == Cord::BaseApi ? {} : superclass.before_actions.dup)
+        @before_actions ||= (self == Cord::BaseApi ? {} : superclass.before_actions.deep_dup)
       end
 
       def before_action name, opts = {}, &block
