@@ -4,4 +4,6 @@ Cord::Engine.routes.draw do
   get '/*api/fields', to: 'api_base#fields'
   post '/*api/perform/:action_name', to: 'api_base#perform'
   get '/*api', to: 'api_base#index'
+
+  post '/', to: 'api_base#respond'
 end
