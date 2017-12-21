@@ -6,5 +6,13 @@ class CommentsApi < ApplicationApi
   scope :scope1, &:all
   scope :scope2, &:all
 
-  attribute(:id2) { |x| x.id * 2 }
+  attribute(:id2) do
+    get(:id) * 2
+  end
+
+  attribute :id4 do
+    if has?(:id2)
+      get(:id2) * 2
+    end
+  end
 end

@@ -26,7 +26,7 @@ class ArticlesApi < ApplicationApi
     end
 
     attribute :comment_count do |record|
-      record.comments.count
+      has?(:comment_ids) ? get(:comment_ids).size : record.comments.count
     end
 
     macro :comments, uses: NotesApi do |options|

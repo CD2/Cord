@@ -49,7 +49,12 @@ module Cord
 
     def get attribute
       attribute = normalize(attribute)
-      @record_json[attribute] || calculate_attribute(attribute)
+      has?(attribute) ? @record_json[attribute] : calculate_attribute(attribute)
+    end
+
+    def has? attribute
+      attribute = normalize(attribute)
+      @record_json.has_key? attribute
     end
 
     def calculate_attribute(name)
