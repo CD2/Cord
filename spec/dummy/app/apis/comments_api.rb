@@ -11,8 +11,11 @@ class CommentsApi < ApplicationApi
   end
 
   attribute :id4 do
-    if has?(:id2)
+    if requested?(:id2)
       get(:id2) * 2
     end
   end
+
+  crud_actions :create, :update, :destroy
+  permit_params :body, :article_id
 end

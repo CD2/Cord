@@ -12,22 +12,24 @@ module Cord
       end
 
       def self.define_create
-        action :create do
-          resource = driver.new(resource_params)
-          instance_exec resource, &crud_callbacks[:before_create]
-          next if halted?
-          if raise_on_crud_error?
-            resource.save!
-            render(id: resource.id)
-          else
-            resource.save ? render(id: resource.id) : error_for(resource, resource.errors)
+        collection do
+          action :create do
+            resource = driver.new(resource_params)
+            instance_exec resource, &crud_callbacks[:before_create]
+            next if halted?
+            if raise_on_crud_error?
+              resource.save!
+              render(id: resource.id)
+            else
+              resource.save ? render(id: resource.id) : render(resource.errors)
+            end
+            instance_exec resource, &crud_callbacks[:after_create]
           end
-          instance_exec resource, &crud_callbacks[:after_create]
         end
       end
 
       def self.define_update
-        action_for :update do |resource|
+        action :update do |resource|
           instance_exec resource, &crud_callbacks[:before_update]
           next if halted?
           if raise_on_crud_error?
@@ -37,7 +39,7 @@ module Cord
             if resource.update(resource_params)
               render(id: resource.id)
             else
-              error_for(resource, resource.errors)
+              render resource.errors
             end
           end
           instance_exec resource, &crud_callbacks[:after_update]
@@ -45,7 +47,7 @@ module Cord
       end
 
       def self.define_destroy
-        action_for :destroy do |resource|
+        action :destroy do |resource|
           instance_exec resource, &crud_callbacks[:before_destroy]
           next if halted?
           resource.destroy
@@ -106,8 +108,8 @@ module Cord
     end
 
     def resource_params
-      return {} if params[resource_name.singularize]&.blank?
-      params.require(resource_name.singularize).permit(permitted_params)
+      return {} if data[resource_name.singularize]&.blank?
+      data.require(resource_name.singularize).permit(permitted_params)
     end
 
     def permitted_params
