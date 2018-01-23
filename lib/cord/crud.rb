@@ -28,13 +28,14 @@ module Cord
 
       def self.define_update
         action_for :update do |resource|
+          resource.assign_attributes(resource_params)
           instance_exec resource, &crud_callbacks[:before_update]
           next if halted?
           if raise_on_crud_error?
-            resource.update!(resource_params)
+            resource.save!(resource_params)
             render(id: resource.id)
           else
-            if resource.update(resource_params)
+            if resource.save(resource_params)
               render(id: resource.id)
             else
               error_for(resource, resource.errors)
