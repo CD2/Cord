@@ -1,4 +1,4 @@
-module Cord
+module CordV2
   module DSL
 
     def self.included(base)
@@ -247,7 +247,7 @@ module Cord
       end
 
       def before_actions
-        @before_actions ||= (self == Cord::BaseApi ? {} : superclass.before_actions.deep_dup)
+        @before_actions ||= (self == CordV2::BaseApi ? {} : superclass.before_actions.deep_dup)
       end
 
       def before_action name, opts = {}, &block
@@ -313,7 +313,7 @@ module Cord
 
       def postgres_rendering_enabled?
         return @postgres_rendering_enabled unless @postgres_rendering_enabled.nil?
-        @postgres_rendering_enabled = Cord.enable_postgres_rendering
+        @postgres_rendering_enabled = CordV2.enable_postgres_rendering
       end
 
       def enable_postgres_rendering value

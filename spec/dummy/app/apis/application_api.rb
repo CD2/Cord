@@ -1,4 +1,4 @@
-class ApplicationApi < Cord::BaseApi
+class ApplicationApi < CordV2::BaseApi
   abstract!
 
   before_action :zzz, only: 5 do

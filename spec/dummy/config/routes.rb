@@ -1,3 +1,3 @@
 Rails.application.routes.draw do
-  mount Cord::Engine => "/cord"
+  mount CordV2::Engine => "/cord"
 end

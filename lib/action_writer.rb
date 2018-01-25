@@ -2,8 +2,8 @@ class ActionWriter
   Dir['./app/apis/**/*.rb'].each { |file| require_dependency file }
   base_url = '/v1/'
   def self.write_actions
-    File.open(Rails.root.join(Cord.action_writer_path), 'w') { |file| file.write('') }
-    File.open(Rails.root.join(Cord.action_writer_path), 'a') do |file|
+    File.open(Rails.root.join(CordV2.action_writer_path), 'w') { |file| file.write('') }
+    File.open(Rails.root.join(CordV2.action_writer_path), 'a') do |file|
       file.write("## Action list for Api's \n")
       ApplicationApi.descendants.each do |api|
         file.write("### #{api} \n")

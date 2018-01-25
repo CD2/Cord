@@ -1,15 +1,15 @@
 $:.push File.expand_path("../lib", __FILE__)
 
 # Maintain your gem's version:
-require "cord/version"
+require "cord_v2/version"
 
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
-  s.name        = "cord"
-  s.version     = Cord::VERSION
+  s.name        = "cord_v2"
+  s.version     = CordV2::VERSION
   s.authors     = ["James Page"]
   s.email       = ["james.page@cd2solutions.co.uk"]
-  s.summary     = "Summary of Cord."
+  s.summary     = "Summary of CordV2."
   s.license     = "MIT"
 
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]

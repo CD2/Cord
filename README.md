@@ -1,6 +1,6 @@
 ![core](http://kenyanewsagency.go.ke/en/wp-content/uploads/2016/09/CORD-Alliance-logo.png "Logo Title Text 1")
 
-# Cord
+# CordV2
 Short description and motivation.
 
 ## Usage

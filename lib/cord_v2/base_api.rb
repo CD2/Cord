@@ -1,7 +1,7 @@
 require_relative 'dsl'
 require_relative 'crud'
 
-module Cord
+module CordV2
   class BaseApi
     include DSL
     include CRUD

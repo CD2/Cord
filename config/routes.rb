@@ -1,4 +1,4 @@
-Cord::Engine.routes.draw do
+CordV2::Engine.routes.draw do
   get '/*api/schema', to: 'api_base#schema'
   get '/*api/ids', to: 'api_base#ids'
   get '/*api/fields', to: 'api_base#fields'

@@ -1,7 +1,7 @@
-require "cord/engine"
-require "cord/base_api"
+require "cord_v2/engine"
+require "cord_v2/base_api"
 
-module Cord
+module CordV2
   class << self
     mattr_accessor :action_writer_path
     mattr_accessor :enable_postgres_rendering

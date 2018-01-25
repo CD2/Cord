@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    cord (0.1.0)
+    cord_v2 (0.1.0)
       rails (~> 5.1.2)
 
 GEM
@@ -177,7 +177,7 @@ PLATFORMS
 
 DEPENDENCIES
   byebug
-  cord!
+  cord_v2!
   database_cleaner
   listen (>= 3.0.5, < 3.2)
   pg

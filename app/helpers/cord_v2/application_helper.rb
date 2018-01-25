@@ -1,7 +1,7 @@
-module Cord
+module CordV2
   module ApplicationHelper
     def cord_controller?
-      Cord.in? self.class.parents
+      CordV2.in? self.class.parents
     end
   end
 end

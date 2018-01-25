@@ -1,4 +1,4 @@
-module Cord
+module CordV2
   module CRUD
     extend ActiveSupport::Concern
 
@@ -98,7 +98,7 @@ module Cord
 
       def self.raise_on_crud_error?
         return @raise_on_crud_error unless @raise_on_crud_error.nil?
-        @raise_on_crud_error = Cord.raise_on_crud_error
+        @raise_on_crud_error = CordV2.raise_on_crud_error
       end
 
       def self.raise_on_crud_error value

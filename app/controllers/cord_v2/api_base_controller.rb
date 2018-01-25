@@ -1,4 +1,4 @@
-class Cord::ApiBaseController < ::ApplicationController
+class CordV2::ApiBaseController < ::ApplicationController
   def schema
     render json: {
       table_name: api.model.table_name,

@@ -3,7 +3,7 @@ require_relative 'boot'
 require 'rails/all'
 
 Bundler.require(*Rails.groups)
-require "cord"
+require "cord_v2"
 
 module Dummy
   class Application < Rails::Application

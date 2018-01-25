@@ -1,4 +1,4 @@
-module Cord
+module CordV2
   class ApplicationController < ActionController::API
   end
 end
